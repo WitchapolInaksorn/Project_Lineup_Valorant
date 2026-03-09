@@ -173,6 +173,14 @@ function Lineup() {
 
         {/* ADD LINEUP */}
         <div className="mb-12">
+          {isCreatePage && (
+            <AddLineupForm
+              mapName={mapName}
+              agentName={agentName}
+              reload={loadLineups}
+            />
+          )}
+
           {!isCreatePage && (
             <>
               {/* SEARCH & FILTER AREA */}
