@@ -30,6 +30,7 @@ function AddLineupForm({ mapName, agentName, reload }) {
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#ef4444",
+        timer: 1300,
       });
 
       setTitle("");

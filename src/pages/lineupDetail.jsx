@@ -53,7 +53,7 @@ function LineupDetail() {
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#ef4444",
-        timer: 1500,
+        timer: 1300,
       });
     } else {
       Swal.fire({
@@ -94,7 +94,7 @@ function LineupDetail() {
         background: "#0f172a",
         color: "#fff",
         confirmButtonColor: "#ef4444",
-        timer: 1500,
+        timer: 1300,
       });
 
       setUnlocked(false);
@@ -147,7 +147,7 @@ function LineupDetail() {
           background: "#0f172a",
           color: "#fff",
           confirmButtonColor: "#ef4444",
-          timer: 1500,
+          timer: 1300,
         });
         navigate(-1);
       } catch (error) {
