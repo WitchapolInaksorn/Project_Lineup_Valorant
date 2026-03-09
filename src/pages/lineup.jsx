@@ -52,6 +52,25 @@ function Lineup() {
   const location = useLocation();
   const isCreatePage = location.pathname.includes("/create/");
 
+  const [filterSide, setFilterSide] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem("valorant-favs");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("valorant-favs", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (e, id) => {
+    e.stopPropagation();
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id],
+    );
+  };
+
   const mapImages = {
     ascent,
     bind,
@@ -154,87 +173,151 @@ function Lineup() {
 
         {/* ADD LINEUP */}
         <div className="mb-12">
-          {isCreatePage && (
-            <AddLineupForm
-              mapName={mapName}
-              agentName={agentName}
-              reload={loadLineups}
-            />
-          )}
-
-          {/* LINEUP LIST */}
           {!isCreatePage && (
             <>
-              {lineups.length === 0 ? (
-                <div className="flex flex-col items-center justify-center mt-20 p-10 border border-dashed border-white/10 rounded-3xl bg-white/5">
-                  <p className="text-gray-400 text-lg italic">
-                    No lineups yet.
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    Be the first to share a lineup for this agent!
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-                  {lineups.map((lineup) => (
-                    <div
-                      key={lineup.id}
-                      onClick={() => navigate(`/lineup/detail/${lineup.id}`)}
-                      className="group relative bg-gradient-to-br from-white/10 to-transparent border border-white/10 p-1 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(239,68,68,0.15)]"
+              {/* SEARCH & FILTER AREA */}
+              <div className="mb-8 space-y-4">
+                {/* Search Bar */}
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-red-500 transition-colors">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      fill="currentColor"
+                      viewBox="0 0 256 256"
                     >
-                      {/* Hover Highlight Border */}
-                      <div className="absolute inset-0 rounded-2xl border-2 border-red-500/0 group-hover:border-red-500/50 transition-all duration-300" />
+                      <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search lineup title..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 focus:outline-none focus:border-red-500/50 transition-all text-sm"
+                  />
+                </div>
 
-                      <div className="bg-[#0b0f19]/80 backdrop-blur-xl p-6 rounded-[14px] h-full flex flex-col justify-between">
-                        <div>
-                          {/* Type Tag */}
-                          <div className="flex justify-between items-start mb-4">
-                            <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
-                              {"Lineup"}
-                            </span>
-                            <div className="text-white/20 group-hover:text-red-500 transition-colors">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                fill="currentColor"
-                                viewBox="0 0 256 256"
-                              >
-                                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
-                              </svg>
+                {/* Filter Tabs */}
+                <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/10">
+                  {["All", "Favorite"].map((side) => (
+                    <button
+                      key={side}
+                      onClick={() => setFilterSide(side)}
+                      className={`flex-1 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all duration-300 ${
+                        filterSide === side
+                          ? "bg-red-500 text-white shadow-lg"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {side}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* FILTER LOGIC */}
+              {(() => {
+                const filteredLineups = lineups.filter((l) => {
+                  const matchSearch = l.title
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase());
+
+                  // เงื่อนไขการกรอง Favorite หรือ Side
+                  if (filterSide === "Favorite") {
+                    return favorites.includes(l.id) && matchSearch;
+                  }
+                  const matchSide =
+                    filterSide === "All" || l.side === filterSide;
+                  return matchSide && matchSearch;
+                });
+
+                if (filteredLineups.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center mt-10 p-10 border border-dashed border-white/10 rounded-3xl bg-white/5">
+                      <p className="text-gray-400 text-lg italic text-center">
+                        {filterSide === "Favorite" && favorites.length === 0
+                          ? "You haven't favorited any lineups yet."
+                          : "No lineups found."}
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredLineups.map((lineup) => (
+                      <div
+                        key={lineup.id}
+                        onClick={() => navigate(`/lineup/detail/${lineup.id}`)}
+                        className="group relative bg-gradient-to-br from-white/10 to-transparent border border-white/10 p-1 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        {/* Star Icon (Favorite Button) */}
+                        <button
+                          onClick={(e) => toggleFavorite(e, lineup.id)}
+                          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:scale-110 active:scale-90"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill={
+                              favorites.includes(lineup.id) ? "#ef4444" : "none"
+                            }
+                            stroke={
+                              favorites.includes(lineup.id)
+                                ? "#ef4444"
+                                : "currentColor"
+                            }
+                            viewBox="0 0 256 256"
+                            className="transition-colors duration-300"
+                          >
+                            <path
+                              d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.07-31-51.07,31a16,16,0,0,1-23.84-17.34L66.6,153.74l-45.1-39.36A16,16,0,0,1,30.4,87.1l59.89-5.12L113.88,26a16,16,0,0,1,28.24,0l23.59,55.94,59.89,5.12A16,16,0,0,1,234.5,114.38Z"
+                              strokeWidth="16"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            ></path>
+                          </svg>
+                        </button>
+
+                        {/* เนื้อหาการ์ดเดิมของคุณ... */}
+                        <div className="bg-[#0b0f19]/80 backdrop-blur-xl p-6 rounded-[14px] h-full flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start mb-4">
+                              <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
+                                {lineup.side || "Lineup"}
+                              </span>
                             </div>
+                            <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 italic">
+                              {lineup.title}
+                            </h3>
+                            <p className="text-gray-400 text-sm line-clamp-2 mb-6 font-light">
+                              {lineup.description || "No details provided."}
+                            </p>
                           </div>
 
-                          {/* Title & Description */}
-                          <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 italic">
-                            {lineup.title}
-                          </h3>
-                          <p className="text-gray-400 text-sm line-clamp-2 mb-6 font-light">
-                            {lineup.description ||
-                              "No additional details provided for this lineup."}
-                          </p>
-                        </div>
-
-                        {/* Info Footer */}
-                        <div className="space-y-2 border-t border-white/5 pt-4">
-                          <div className="flex justify-between text-[11px] uppercase tracking-tighter">
-                            <span className="text-gray-500">Map</span>
-                            <span className="text-white font-semibold">
-                              {lineup.map}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-[11px] uppercase tracking-tighter">
-                            <span className="text-gray-500">Agent</span>
-                            <span className="text-red-500 font-bold">
-                              {lineup.agent}
-                            </span>
+                          <div className="space-y-2 border-t border-white/5 pt-4">
+                            <div className="flex justify-between text-[11px] uppercase tracking-tighter">
+                              <span className="text-gray-500">Map</span>
+                              <span className="text-white font-semibold">
+                                {lineup.map}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-[11px] uppercase tracking-tighter">
+                              <span className="text-gray-500">Agent</span>
+                              <span className="text-red-500 font-bold">
+                                {lineup.agent}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
