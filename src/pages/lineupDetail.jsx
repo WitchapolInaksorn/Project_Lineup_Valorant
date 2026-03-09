@@ -5,6 +5,7 @@ import {
   updateLineup,
   deleteLineup,
 } from "../service/lineupService";
+import Swal from "sweetalert2";
 
 function LineupDetail() {
   const { id } = useParams();
@@ -45,14 +46,37 @@ function LineupDetail() {
   function unlock() {
     if (password === "w") {
       setUnlocked(true);
-      alert("Admin Access Granted");
+      Swal.fire({
+        icon: "success",
+        title: "Admin Access Granted",
+        text: "You can now edit or delete this lineup.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+        timer: 1500,
+      });
     } else {
-      alert("Wrong password");
+      Swal.fire({
+        icon: "error",
+        title: "Wrong Password",
+        text: "The password you entered is incorrect.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
     }
   }
 
   async function saveEdit() {
-    if (!unlocked) return alert("Unlock first");
+    if (!unlocked)
+      Swal.fire({
+        icon: "warning",
+        title: "Access Locked",
+        text: "Please unlock the admin panel before editing.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
 
     const updatedData = {
       title,
@@ -63,7 +87,15 @@ function LineupDetail() {
 
     try {
       await updateLineup(id, updatedData);
-      alert("Updated Successfully");
+      Swal.fire({
+        icon: "success",
+        title: "Lineup Updated",
+        text: "Your changes have been saved successfully.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+        timer: 1500,
+      });
 
       setUnlocked(false);
       setPassword("");
@@ -71,23 +103,62 @@ function LineupDetail() {
       loadLineup();
     } catch (error) {
       console.error(error);
-      alert("Update failed");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: "Something went wrong while updating the lineup.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
     }
   }
 
   async function remove() {
-    if (!unlocked) return alert("Unlock first");
+    if (!unlocked)
+      Swal.fire({
+        icon: "warning",
+        title: "Access Locked",
+        text: "Please unlock the admin panel before editing.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
 
-    const confirmMessage = `Are you sure you want to delete "${lineup?.title}"?\nThis action cannot be undone!`;
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Delete Lineup?",
+      text: `You are about to delete "${lineup?.title}". This action cannot be undone.`,
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+      background: "#0f172a",
+      color: "#fff",
+      confirmButtonColor: "#ef4444",
+    });
 
-    if (window.confirm(confirmMessage)) {
+    if (result.isConfirmed) {
       try {
         await deleteLineup(id);
-        alert("Lineup deleted successfully");
+        await Swal.fire({
+          icon: "success",
+          title: "Lineup Deleted",
+          text: "The lineup has been permanently removed.",
+          background: "#0f172a",
+          color: "#fff",
+          confirmButtonColor: "#ef4444",
+          timer: 1500,
+        });
         navigate(-1);
       } catch (error) {
-        console.error(error);
-        alert("Failed to delete lineup");
+        Swal.fire({
+          icon: "error",
+          title: "Delete Failed",
+          text: "Unable to delete this lineup. Please try again.",
+          background: "#0f172a",
+          color: "#fff",
+          confirmButtonColor: "#ef4444",
+        });
       }
     }
   }

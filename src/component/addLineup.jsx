@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { createLineup } from "../service/lineupService";
+import Swal from "sweetalert2";
 
 function AddLineupForm({ mapName, agentName, reload }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [links, setLinks] = useState("");
   const [type, setType] = useState("other");
-
-  const tagList = tags
-    .split(",")
-    .map((t) => t.trim())
-    .filter((t) => t.length > 0);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -22,13 +18,19 @@ function AddLineupForm({ mapName, agentName, reload }) {
       agent: agentName.toLowerCase(),
       links: links.split("\n").filter((l) => l.trim() !== ""),
       type,
-      tags: tagList,
     };
 
     try {
       await createLineup(data);
 
-      alert("🚀 Create lineup success!");
+      Swal.fire({
+        icon: "success",
+        title: "Lineup Created!",
+        text: "Your lineup has been added.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
 
       setTitle("");
       setDescription("");
@@ -36,10 +38,15 @@ function AddLineupForm({ mapName, agentName, reload }) {
       setType("other");
 
       reload();
-      // -----------------------
     } catch (error) {
-      console.error("Create failed:", error);
-      alert("❌ Failed to create lineup. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Create failed",
+        text: "Please try again.",
+        background: "#0f172a",
+        color: "#fff",
+        confirmButtonColor: "#ef4444",
+      });
     }
   }
 
@@ -93,7 +100,7 @@ function AddLineupForm({ mapName, agentName, reload }) {
           />
         </div>
 
-        {/* TYPE + TAGS */}
+        {/* TYPE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* TYPE */}
           <div>
