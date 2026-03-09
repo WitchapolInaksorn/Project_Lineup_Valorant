@@ -189,8 +189,8 @@ function Lineup() {
                         <div>
                           {/* Type Tag */}
                           <div className="flex justify-between items-start mb-4">
-                            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
-                              {lineup.type || "Standard"}
+                            <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
+                              {"Lineup"}
                             </span>
                             <div className="text-white/20 group-hover:text-red-500 transition-colors">
                               <svg
@@ -206,7 +206,7 @@ function Lineup() {
                           </div>
 
                           {/* Title & Description */}
-                          <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 uppercase italic">
+                          <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 italic">
                             {lineup.title}
                           </h3>
                           <p className="text-gray-400 text-sm line-clamp-2 mb-6 font-light">

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import brimstone from "../images/brimstone.avif";
 import viper from "../images/viper.avif";
@@ -65,6 +65,10 @@ function Agents() {
   const navigate = useNavigate();
 
   const roles = ["Controller", "Sentinel", "Initiator", "Duelist"];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f1923] via-[#111827] to-black text-white relative overflow-hidden">

@@ -6,7 +6,6 @@ function AddLineupForm({ mapName, agentName, reload }) {
   const [description, setDescription] = useState("");
   const [links, setLinks] = useState("");
   const [type, setType] = useState("other");
-  const [tags, setTags] = useState("");
 
   const tagList = tags
     .split(",")
@@ -34,7 +33,6 @@ function AddLineupForm({ mapName, agentName, reload }) {
       setTitle("");
       setDescription("");
       setLinks("");
-      setTags("");
       setType("other");
 
       reload();
@@ -99,9 +97,7 @@ function AddLineupForm({ mapName, agentName, reload }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* TYPE */}
           <div>
-            <label className="text-xs tracking-wider text-gray-400">
-              Type
-            </label>
+            <label className="text-xs tracking-wider text-gray-400">Type</label>
 
             <select
               className="w-full mt-2 bg-black/40 border border-white/10 rounded-lg p-3 transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 outline-none"
@@ -115,7 +111,6 @@ function AddLineupForm({ mapName, agentName, reload }) {
               <option value="other">other</option>
             </select>
           </div>
-
         </div>
 
         {/* BUTTON */}
