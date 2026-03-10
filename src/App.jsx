@@ -6,6 +6,8 @@ import Maps from "./pages/map";
 import Agents from "./pages/agent";
 import Lineup from "./pages/lineup";
 import LineupDetail from "./pages/lineupDetail";
+import Club from "./pages/club";
+import ClubDashboard from "./pages/clubDashboard";
 
 function App() {
   return (
@@ -61,6 +63,24 @@ function App() {
           element={
             <ProtectedRoute>
               <LineupDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/club"
+          element={
+            <ProtectedRoute>
+              <Club />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/club/:id"
+          element={
+            <ProtectedRoute>
+              <ClubDashboard />
             </ProtectedRoute>
           }
         />

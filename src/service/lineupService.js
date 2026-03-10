@@ -11,7 +11,10 @@ import {
   getDoc,
   serverTimestamp,
   orderBy,
+  or,
+  and,
 } from "firebase/firestore";
+import { getMyClubs } from "./clubService";
 
 export async function createLineup(data) {
   try {
@@ -53,31 +56,34 @@ export async function getUserLineups() {
 }
 
 export async function getLineupsByMapAgent(mapName, agentName) {
-  try {
-    const user = auth.currentUser;
-    if (!user) return [];
+  const user = auth.currentUser;
+  if (!user) return [];
 
-    const safeMap = mapName?.toLowerCase() || "";
-    const safeAgent = agentName?.toLowerCase() || "";
+  const clubsPromise = getMyClubs();
 
-    const q = query(
-      collection(db, "lineups"),
-      where("ownerId", "==", user.uid),
+  const safeMap = mapName?.toLowerCase() || "";
+  const safeAgent = agentName?.toLowerCase() || "";
+
+  const myClubs = await clubsPromise;
+  const myClubIds = myClubs.map((c) => c.id);
+
+  const q = query(
+    collection(db, "lineups"),
+    and(
       where("map", "==", safeMap),
       where("agent", "==", safeAgent),
-      orderBy("createdAt", "desc"),
-    );
+      or(
+        where("ownerId", "==", user.uid),
+        where("clubId", "in", myClubIds.length > 0 ? myClubIds : ["none"]),
+      ),
+    ),
+    orderBy("createdAt", "desc"),
+  );
 
-    const snap = await getDocs(q);
-    return snap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-  } catch (error) {
-    console.error("Error getting lineups:", error);
-    return [];
-  }
+  const snap = await getDocs(q);
+  return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
+
 export async function getLineupById(id) {
   try {
     if (!id) return null;

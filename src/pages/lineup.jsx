@@ -48,6 +48,7 @@ function Lineup() {
 
   const { mapName, agentName } = useParams();
   const [lineups, setLineups] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const location = useLocation();
   const isCreatePage = location.pathname.includes("/create/");
@@ -125,8 +126,15 @@ function Lineup() {
   }, [mapName, agentName]);
 
   async function loadLineups() {
-    const data = await getLineupsByMapAgent(mapName, agentName);
-    setLineups(data);
+    setIsLoading(true);
+    try {
+      const data = await getLineupsByMapAgent(mapName, agentName);
+      setLineups(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -227,12 +235,38 @@ function Lineup() {
 
               {/* FILTER LOGIC */}
               {(() => {
+                if (isLoading) {
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {[1, 2, 3].map((n) => (
+                        <div
+                          key={n}
+                          className="animate-pulse bg-white/5 border border-white/10 rounded-2xl h-[280px] relative overflow-hidden"
+                        >
+                          <div className="p-6 space-y-4">
+                            <div className="h-4 bg-white/10 rounded w-1/4"></div>
+                            <div className="h-8 bg-white/10 rounded w-3/4"></div>
+                            <div className="space-y-2">
+                              <div className="h-3 bg-white/5 rounded w-full"></div>
+                              <div className="h-3 bg-white/5 rounded w-5/6"></div>
+                            </div>
+                            <div className="pt-10 space-y-3">
+                              <div className="h-2 bg-white/5 rounded w-full"></div>
+                              <div className="h-2 bg-white/5 rounded w-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+
+                // 2. กรองข้อมูลตาม Search และ Tabs
                 const filteredLineups = lineups.filter((l) => {
                   const matchSearch = l.title
-                    .toLowerCase()
+                    ?.toLowerCase()
                     .includes(searchQuery.toLowerCase());
 
-                  // เงื่อนไขการกรอง Favorite หรือ Side
                   if (filterSide === "Favorite") {
                     return favorites.includes(l.id) && matchSearch;
                   }
@@ -241,13 +275,34 @@ function Lineup() {
                   return matchSide && matchSearch;
                 });
 
+                // 3. ถ้าโหลดเสร็จแล้วแต่ไม่มีข้อมูลจริงๆ
                 if (filteredLineups.length === 0) {
                   return (
-                    <div className="flex flex-col items-center justify-center mt-10 p-10 border border-dashed border-white/10 rounded-3xl bg-white/5">
-                      <p className="text-gray-400 text-lg italic text-center">
-                        {filterSide === "Favorite" && favorites.length === 0
+                    <div className="flex flex-col items-center justify-center mt-10 p-16 border border-dashed border-white/10 rounded-3xl bg-white/5 backdrop-blur-sm">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        fill="gray"
+                        viewBox="0 0 256 256"
+                        className="mb-4 opacity-20"
+                      >
+                        <path
+                          d="M228,128a100,100,0,1,1-100-100A100,100,0,0,1,228,128Z"
+                          opacity="0.2"
+                        ></path>
+                        <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm12-88a12,12,0,1,1-12-12A12,12,0,0,1,140,128Z"></path>
+                      </svg>
+                      <p className="text-gray-300 text-lg font-medium italic">
+                        {filterSide === "Favorite"
                           ? "You haven't favorited any lineups yet."
-                          : "No lineups found."}
+                          : "No tactical lineups found."}
+                      </p>
+
+                      <p className="text-gray-400 text-sm font-light">
+                        {filterSide === "Favorite"
+                          ? "Try clicking the star icon on any lineup to save it here."
+                          : "You need to add a lineup first."}
                       </p>
                     </div>
                   );
@@ -255,74 +310,119 @@ function Lineup() {
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredLineups.map((lineup) => (
-                      <div
-                        key={lineup.id}
-                        onClick={() => navigate(`/lineup/detail/${lineup.id}`)}
-                        className="group relative bg-gradient-to-br from-white/10 to-transparent border border-white/10 p-1 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.02]"
-                      >
-                        {/* Star Icon (Favorite Button) */}
-                        <button
-                          onClick={(e) => toggleFavorite(e, lineup.id)}
-                          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:scale-110 active:scale-90"
+                    {filteredLineups.map((lineup) => {
+                      const isClubLineup =
+                        lineup.clubId !== null &&
+                        lineup.clubId !== undefined &&
+                        lineup.clubId !== "";
+                      return (
+                        <div
+                          key={lineup.id}
+                          onClick={() =>
+                            navigate(`/lineup/detail/${lineup.id}`)
+                          }
+                          className={`group relative bg-gradient-to-br from-white/10 to-transparent p-1 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.02] border ${
+                            isClubLineup
+                              ? "border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.1)]"
+                              : "border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                          }`}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            fill={
-                              favorites.includes(lineup.id) ? "#ef4444" : "none"
-                            }
-                            stroke={
-                              favorites.includes(lineup.id)
-                                ? "#ef4444"
-                                : "currentColor"
-                            }
-                            viewBox="0 0 256 256"
-                            className="transition-colors duration-300"
-                          >
-                            <path
-                              d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.07-31-51.07,31a16,16,0,0,1-23.84-17.34L66.6,153.74l-45.1-39.36A16,16,0,0,1,30.4,87.1l59.89-5.12L113.88,26a16,16,0,0,1,28.24,0l23.59,55.94,59.89,5.12A16,16,0,0,1,234.5,114.38Z"
-                              strokeWidth="16"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            ></path>
-                          </svg>
-                        </button>
-
-                        {/* เนื้อหาการ์ดเดิมของคุณ... */}
-                        <div className="bg-[#0b0f19]/80 backdrop-blur-xl p-6 rounded-[14px] h-full flex flex-col justify-between">
-                          <div>
-                            <div className="flex justify-between items-start mb-4">
-                              <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
-                                {lineup.type || "other"}
+                          {/* Badge แยกประเภท (มุมซ้ายบน) */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-max">
+                            {isClubLineup ? (
+                              <span className="px-3 py-1 text-[12px] font-bold tracking-widest border rounded-md bg-cyan-500/10 border-cyan-500/20 text-cyan-400">
+                                Club Lineup
                               </span>
-                            </div>
-                            <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 italic">
-                              {lineup.title}
-                            </h3>
-                            <p className="text-gray-400 text-sm line-clamp-2 mb-6 font-light">
-                              {lineup.description || "No details provided."}
-                            </p>
+                            ) : (
+                              <span className="px-3 py-1 text-[12px] font-bold tracking-widest border rounded-md bg-red-500/10 border-red-500/20 text-red-500">
+                                My Lineup
+                              </span>
+                            )}
                           </div>
 
-                          <div className="space-y-2 border-t border-white/5 pt-4">
-                            <div className="flex justify-between text-[11px] uppercase tracking-tighter">
-                              <span className="text-gray-500">Map</span>
-                              <span className="text-white font-semibold">
-                                {lineup.map}
-                              </span>
+                          {/* Star Icon (Favorite Button) */}
+                          <button
+                            onClick={(e) => toggleFavorite(e, lineup.id)}
+                            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:scale-110 active:scale-90"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              fill={
+                                favorites.includes(lineup.id)
+                                  ? "#ef4444"
+                                  : "none"
+                              }
+                              stroke={
+                                favorites.includes(lineup.id)
+                                  ? "#ef4444"
+                                  : "currentColor"
+                              }
+                              viewBox="0 0 256 256"
+                              className="transition-colors duration-300"
+                            >
+                              <path
+                                d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.07-31-51.07,31a16,16,0,0,1-23.84-17.34L66.6,153.74l-45.1-39.36A16,16,0,0,1,30.4,87.1l59.89-5.12L113.88,26a16,16,0,0,1,28.24,0l23.59,55.94,59.89,5.12A16,16,0,0,1,234.5,114.38Z"
+                                strokeWidth="16"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              ></path>
+                            </svg>
+                          </button>
+
+                          <div
+                            className={`bg-[#0b0f19]/80 backdrop-blur-xl p-6 rounded-[14px] h-full flex flex-col justify-between ${isClubLineup ? "border-t border-cyan-500/20" : ""}`}
+                          >
+                            <div>
+                              <div className="flex justify-between items-start mb-4">
+                                <span
+                                  className={`px-3 py-1 text-[10px] uppercase font-bold tracking-widest border rounded-md ${
+                                    isClubLineup
+                                      ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
+                                      : "bg-red-500/10 border-red-500/20 text-red-500"
+                                  }`}
+                                >
+                                  {lineup.type || "other"}
+                                </span>
+                              </div>
+
+                              <h3
+                                className={`text-xl font-black group-hover:text-white transition-colors mb-2 line-clamp-1 italic ${
+                                  isClubLineup ? "text-cyan-100" : "text-white"
+                                }`}
+                              >
+                                {lineup.title}
+                              </h3>
+                              <p className="text-gray-400 text-sm line-clamp-2 mb-6 font-light">
+                                {lineup.description || "No details provided."}
+                              </p>
                             </div>
-                            <div className="flex justify-between text-[11px] uppercase tracking-tighter">
-                              <span className="text-gray-500">Agent</span>
-                              <span className="text-red-500 font-bold">
-                                {lineup.agent}
-                              </span>
+
+                            <div className="space-y-2 border-t border-white/5 pt-4">
+                              <div className="flex justify-between text-[11px] uppercase tracking-tighter">
+                                <span className="text-gray-500 font-medium">
+                                  Map
+                                </span>
+                                <span className="text-white font-semibold">
+                                  {lineup.map}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-[11px] uppercase tracking-tighter">
+                                <span className="text-gray-500 font-medium">
+                                  Agent
+                                </span>
+                                <span
+                                  className={`font-bold ${isClubLineup ? "text-cyan-500" : "text-red-500"}`}
+                                >
+                                  {lineup.agent}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })()}

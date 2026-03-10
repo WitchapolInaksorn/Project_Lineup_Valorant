@@ -193,29 +193,56 @@ function Agents() {
 
             <h2 className="text-xl font-bold mb-6">{selectedAgent.name}</h2>
 
-            <div className="flex flex-col gap-4">
-              {/* CREATE LINEUP */}
+            <div className="flex flex-col gap-3 mt-2">
+              {/* 1. CREATE LINEUP - Primary Action */}
               <button
                 onClick={() =>
                   navigate(
                     `/lineup/create/${mapName}/${selectedAgent.name.toLowerCase()}`,
                   )
                 }
-                className="bg-red-500 hover:bg-red-600 py-3 rounded-xl font-semibold transition"
+                className="group relative overflow-hidden bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.3)] active:scale-95"
               >
-                Create Lineup
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span className="text-lg">+</span> Create Lineup
+                </span>
+                {/* Subtle sweep animation on hover */}
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
               </button>
 
-              {/* VIEW LINEUPS */}
+              {/* 2. VIEW LINEUPS - Secondary Action */}
               <button
                 onClick={() =>
                   navigate(
                     `/lineup/${mapName}/${selectedAgent.name.toLowerCase()}`,
                   )
                 }
-                className="bg-white/10 border border-white/20 hover:border-red-400 py-3 rounded-xl font-semibold transition"
+                className="bg-white/5 border border-white/10 hover:border-red-500/50 hover:bg-white/10 py-3 rounded-xl font-semibold uppercase tracking-wider transition-all duration-300 active:scale-95"
               >
-                View Lineup
+                View Lineups
+              </button>
+
+              {/* 3. JOIN CLUB - Tertiary Action */}
+              <button
+                onClick={() =>
+                  navigate(`/club`, { state: { fromMap: mapName } })
+                }
+                className="bg-transparent hover:bg-white/5 text-gray-400 hover:text-white py-2 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center gap-1 opacity-70 hover:opacity-100"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                Community Clubs
               </button>
             </div>
           </div>

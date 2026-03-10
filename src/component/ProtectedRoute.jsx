@@ -40,8 +40,20 @@ function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-white bg-black">
-        Loading...
+      <div className="min-h-screen bg-[#0f1923] flex flex-col items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-b-red-500/50 rounded-full animate-spin-slow"></div>
+        </div>
+
+        <div className="mt-6 flex flex-col items-center">
+          <p className="text-red-500 font-black tracking-[0.2em] animate-pulse">
+            Loading...
+          </p>
+          <div className="w-32 h-[2px] bg-white/10 mt-2 overflow-hidden">
+            <div className="w-full h-full bg-red-500 origin-left animate-loading-bar"></div>
+          </div>
+        </div>
       </div>
     );
   }

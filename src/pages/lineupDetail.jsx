@@ -6,6 +6,7 @@ import {
   deleteLineup,
 } from "../service/lineupService";
 import Swal from "sweetalert2";
+import { getMyClubs } from "../service/clubService";
 
 function LineupDetail() {
   const { id } = useParams();
@@ -21,9 +22,22 @@ function LineupDetail() {
   const [links, setLinks] = useState("");
   const [type, setType] = useState("");
 
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState("");
+
   useEffect(() => {
     loadLineup();
+    fetchClubs();
   }, [id]);
+
+  async function fetchClubs() {
+    try {
+      const myClubs = await getMyClubs();
+      setClubs(myClubs);
+    } catch (error) {
+      console.error("Error loading clubs:", error);
+    }
+  }
 
   async function loadLineup() {
     try {
@@ -36,6 +50,7 @@ function LineupDetail() {
         setDescription(data.description || "");
         setLinks(data.links ? data.links.join("\n") : "");
         setType(data.type || "other");
+        setSelectedClub(data.clubId || "");
       }
     } catch (error) {
       console.error(error);
@@ -83,6 +98,7 @@ function LineupDetail() {
       description,
       links: links.split("\n").filter((l) => l.trim() !== ""),
       type,
+      clubId: selectedClub || null,
     };
 
     try {
@@ -170,14 +186,8 @@ function LineupDetail() {
     setType(lineup?.type || "other");
     setUnlocked(false);
     setPassword("");
+    setSelectedClub(lineup?.clubId || "");
   }
-
-  if (loading)
-    return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-red-500 font-bold">
-        Loading...
-      </div>
-    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f1923] via-[#111827] to-black text-white relative overflow-hidden">
@@ -297,7 +307,7 @@ function LineupDetail() {
                       onChange={(e) => setLinks(e.target.value)}
                     />
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                     <div>
                       <label className="text-gray-500 font-bold">Type</label>
                       <select
@@ -312,6 +322,25 @@ function LineupDetail() {
                         <option value="other">other</option>
                       </select>
                     </div>
+
+                    <div>
+                      <label className="text-gray-500 font-bold">
+                        Share Visibility
+                      </label>
+                      <select
+                        className="w-full mt-1 bg-black/60 border border-white/10 rounded-lg p-2"
+                        value={selectedClub}
+                        onChange={(e) => setSelectedClub(e.target.value)}
+                      >
+                        <option value="">🔒 Personal (Only Me)</option>
+                        {clubs.map((club) => (
+                          <option key={club.id} value={club.id}>
+                            👥 {club.name} (Party)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* ----------------- */}
                   </div>
 
                   {/* ส่วนท้ายของ Editor Panel */}
