@@ -54,11 +54,15 @@ export async function getUserLineups() {
 
 export async function getLineupsByMapAgent(mapName, agentName) {
   try {
+    const user = auth.currentUser;
+    if (!user) return [];
+
     const safeMap = mapName?.toLowerCase() || "";
     const safeAgent = agentName?.toLowerCase() || "";
 
     const q = query(
       collection(db, "lineups"),
+      where("ownerId", "==", user.uid),
       where("map", "==", safeMap),
       where("agent", "==", safeAgent),
       orderBy("createdAt", "desc"),

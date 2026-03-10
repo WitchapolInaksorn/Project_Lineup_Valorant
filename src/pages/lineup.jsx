@@ -295,7 +295,7 @@ function Lineup() {
                           <div>
                             <div className="flex justify-between items-start mb-4">
                               <span className="px-3 py-1 text-[10px] uppercase font-bold tracking-widest bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
-                                {lineup.side || "Lineup"}
+                                {lineup.type || "other"}
                               </span>
                             </div>
                             <h3 className="text-xl font-black text-white group-hover:text-red-400 transition-colors mb-2 line-clamp-1 italic">

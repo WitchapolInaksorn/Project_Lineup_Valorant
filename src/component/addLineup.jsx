@@ -112,10 +112,10 @@ function AddLineupForm({ mapName, agentName, reload }) {
               value={type}
               onChange={(e) => setType(e.target.value)}
             >
-              <option value="post-plant">smoke</option>
-              <option value="default">molly</option>
-              <option value="retake">flash</option>
-              <option value="defense">wall</option>
+              <option value="smoke">smoke</option>
+              <option value="molly">molly</option>
+              <option value="flash">flash</option>
+              <option value="wall">wall</option>
               <option value="other">other</option>
             </select>
           </div>

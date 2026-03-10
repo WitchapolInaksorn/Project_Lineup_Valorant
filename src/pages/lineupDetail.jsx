@@ -189,7 +189,7 @@ function LineupDetail() {
           <div>
             <div className="flex gap-3 mb-2">
               <span className="px-2 py-0.5 bg-red-500/20 text-red-500 text-[10px] font-bold uppercase border border-red-500/30 rounded">
-                Lineup
+                {lineup?.type}
               </span>
               <span className="text-gray-500 text-xs uppercase tracking-widest">
                 {lineup?.map} // {lineup?.agent}
