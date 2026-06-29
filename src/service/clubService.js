@@ -11,6 +11,7 @@ import {
   serverTimestamp,
   getDoc,
   arrayRemove,
+  deleteDoc,
 } from "firebase/firestore";
 
 // สร้าง Club ใหม่
@@ -96,4 +97,48 @@ export async function kickMember(clubId, memberUid) {
   await updateDoc(clubRef, {
     members: arrayRemove(memberUid),
   });
+}
+
+// ลบ Club (Owner เท่านั้น)
+export async function deleteClub(clubId) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("Please login first");
+  }
+
+  const clubRef = doc(db, "clubs", clubId);
+
+  // ตรวจสอบว่าคลับมีอยู่จริง
+  const clubSnap = await getDoc(clubRef);
+
+  if (!clubSnap.exists()) {
+    throw new Error("Club not found");
+  }
+
+  const club = clubSnap.data();
+
+  // ตรวจสอบสิทธิ์ Owner
+  if (club.ownerId !== user.uid) {
+    throw new Error("Only the club owner can delete this club");
+  }
+
+  // ---------------------------
+  // ลบ Lineup ทั้งหมดของ Club
+  // ---------------------------
+  const lineupQuery = query(
+    collection(db, "lineups"),
+    where("clubId", "==", clubId),
+  );
+
+  const lineupSnap = await getDocs(lineupQuery);
+
+  for (const lineup of lineupSnap.docs) {
+    await deleteDoc(lineup.ref);
+  }
+
+  // ---------------------------
+  // ลบ Club
+  // ---------------------------
+  await deleteDoc(clubRef);
 }

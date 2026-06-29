@@ -4,6 +4,7 @@ import {
   getClubById,
   getMembersProfile,
   kickMember,
+  deleteClub,
 } from "../service/clubService";
 import { auth } from "../service/firebase";
 import Swal from "sweetalert2";
@@ -79,6 +80,46 @@ function ClubDashboard() {
     }
   }
 
+  async function handleDeleteClub() {
+    const result = await Swal.fire({
+      title: "Delete Club?",
+      text: "This action cannot be undone.\nAll club lineups will also be deleted.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      background: "#0f172a",
+      color: "#fff",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteClub(id);
+
+      await Swal.fire({
+        title: "Deleted!",
+        text: "Club deleted successfully.",
+        icon: "success",
+        background: "#0f172a",
+        color: "#fff",
+      });
+
+      navigate("/club");
+    } catch (error) {
+      console.error(error);
+
+      Swal.fire({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+        background: "#0f172a",
+        color: "#fff",
+      });
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0f1923] flex flex-col items-center justify-center">
@@ -120,11 +161,24 @@ function ClubDashboard() {
               </span>
             </h1>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest">
-              Club ID
-            </p>
-            <p className="font-mono text-xs text-red-400">{club?.id}</p>
+          <div className="text-right space-y-4">
+            {/* Delete Club */}
+            {isOwner && (
+              <button
+                onClick={handleDeleteClub}
+                className="w-full bg-red-500 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+              >
+                Delete Club
+              </button>
+            )}
+
+            {/* Club ID */}
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+                Club ID
+              </p>
+              <p className="font-mono text-xs text-red-400">{club?.id}</p>
+            </div>
           </div>
         </div>
 

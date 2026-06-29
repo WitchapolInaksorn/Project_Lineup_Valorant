@@ -87,6 +87,12 @@ function Club() {
       <div className="fixed w-[500px] h-[500px] bg-red-500 opacity-10 blur-[120px] rounded-full top-[-100px] left-[-100px] pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto py-10">
+        <button
+          onClick={() => navigate("/")}
+          className="text-gray-500 hover:text-white text-base mb-4 flex items-center gap-2 transition"
+        >
+          ← Back to Main Menu
+        </button>
         <h1 className="text-4xl font-black italic uppercase mb-10 border-b border-white/10 pb-4">
           Tactical <span className="text-red-500">Clubs</span>
         </h1>
